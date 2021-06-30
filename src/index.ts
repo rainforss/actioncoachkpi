@@ -1,13 +1,18 @@
 import * as msal from "@azure/msal-node";
-
 import dotenv from "dotenv";
 import express from "express";
-import session from "express-session";
-import { MyContext, verifyUser } from "./utils/verifyUser";
+import tokenRoute from "./routes/api/token";
+import regionsRoute from "./routes/api/regions";
+import { verifyUser } from "./utils/verifyUser";
 
+//Load environment variables
 dotenv.config();
 
-const config = {
+const app = express();
+
+app.use(express.json());
+
+const msalConfig: msal.Configuration = {
   auth: {
     clientId: process.env.CLIENT_ID!,
     authority: `https://login.microsoftonline.com/${process.env.TENANT_ID}`,
@@ -15,7 +20,7 @@ const config = {
   },
   system: {
     loggerOptions: {
-      loggerCallback(message: any) {
+      loggerCallback(message) {
         console.log(message);
       },
       piiLoggingEnabled: false,
@@ -24,45 +29,48 @@ const config = {
   },
 };
 
-const app = express();
+//Instantiate MSAL instance for client credential OAuth flow.
+export const cca = new msal.ConfidentialClientApplication(msalConfig);
 
-app.use(
-  session({
-    secret: "csy930614",
-    name: "access",
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      secure: false,
-      maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
-      httpOnly: true,
-      sameSite: "lax",
-    },
-  })
-);
-
-// Create msal application object
-app.locals.msalClient = new msal.ConfidentialClientApplication(config);
-
-// With client credentials flows permissions need to be granted in the portal by a tenant administrator.
-// The scope is always in the format "<resource>/.default"
-const clientCredentialRequest = {
+//Graph access token configuration
+const clientCredentialGraphRequest: msal.ClientCredentialRequest = {
   scopes: ["https://graph.microsoft.com/.default"],
   azureRegion: "westus2",
   skipCache: true,
 };
 
-app.get("/token", verifyUser, async ({ req, res }: MyContext) => {
-  app.locals.msalClient
-    .acquireTokenByClientCredential(clientCredentialRequest)
-    .then((response: msal.AuthenticationResult) => {
-      console.log("Response: ", response);
-      req.session.accessToken = response.accessToken;
+//Dynamics CRM access token configuration
+const clientCredentialCrmRequest: msal.ClientCredentialRequest = {
+  scopes: ["https://actioncoachsystems.crm.dynamics.com/.default"],
+  azureRegion: "westus2",
+  skipCache: true,
+};
+
+//Function used to obtain both the CRM and Graph access token
+const getToken = async () => {
+  Promise.all([
+    cca.acquireTokenByClientCredential(clientCredentialGraphRequest),
+    cca.acquireTokenByClientCredential(clientCredentialCrmRequest),
+  ])
+    .then((responses) => {
+      console.log(responses);
+      const [graph, dynamics] = responses;
+      app.locals.graphAccessToken = graph?.accessToken;
+      app.locals.accessToken = dynamics?.accessToken;
     })
-    .catch((error: any) => {
-      console.log(JSON.stringify(error));
-    });
-});
+    .catch((err) => console.log(err));
+};
+
+//Get access tokens upon server start and periodically get tokens before previous ones expire.
+getToken();
+setInterval(() => getToken(), 1000 * 60 * 60);
+
+//Use this middleware to ensure that user logged into front end is a user under Action Coach
+app.use(verifyUser);
+
+app.use("/api/token", tokenRoute);
+
+app.use("/api/regions", regionsRoute);
 
 app.listen(process.env.PORT || 5000, () =>
   console.log("Server started at port 5000.")

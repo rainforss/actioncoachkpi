@@ -5,17 +5,28 @@ import { getUserDetails } from "./graph";
 export type MyContext = {
   req: Request & { session: Session & { accessToken?: string } };
   res: Response;
-  next: NextFunction;
 };
 
-export const verifyUser = ({ req, res, next }: MyContext) => {
-  const userId = req.query.userId;
-  //Verify the user ID using MS Graph, if exists, proceed to the next step in the pipeline
-  const user = getUserDetails(req.session.accessToken!);
-
-  if (!user) {
-    throw Error("User does not exist in current tenant.");
+export const verifyUser = async (
+  req: Request & { session: Session & { accessToken?: string } },
+  res: Response,
+  next: NextFunction
+) => {
+  if (!req.query.userId) {
+    return res.status(404).json({ message: "Missing user information." });
   }
+  const userId = req.query.userId as string;
+  //Verify the user ID using MS Graph, if exists, proceed to the next step in the pipeline
+  try {
+    const user = await getUserDetails(req.app.locals.graphAccessToken, userId!);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User does not exist in current tenant." });
+    }
 
-  next();
+    next();
+  } catch (error) {
+    return res.status(error.statusCode).json(JSON.parse(error.body));
+  }
 };
