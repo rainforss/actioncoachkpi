@@ -24,6 +24,7 @@ export const getToken = async (app: Express) => {
   ])
     .then((responses) => {
       const [graph, dynamics] = responses;
+      console.log(dynamics?.accessToken);
       app.locals.graphAccessToken = graph?.accessToken;
       app.locals.accessToken = dynamics?.accessToken;
     })

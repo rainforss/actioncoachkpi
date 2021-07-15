@@ -1,12 +1,9 @@
 import * as msal from "@azure/msal-node";
 import dotenv from "dotenv";
 import express from "express";
-import tokenRoute from "./routes/api/token";
-import regionsRoute from "./routes/api/regions";
 import usersRoute from "./routes/api/users";
 import kpisRoute from "./routes/api/kpiEntries";
 import { verifyUser } from "./utils/verifyUser";
-import { createConnection } from "typeorm";
 import { getToken } from "./utils/tokenRequest";
 import cors from "cors";
 
@@ -34,9 +31,6 @@ export const cca = new msal.ConfidentialClientApplication(msalConfig);
 
 //Main thread
 const main = async () => {
-  //Connect to MongoDB using Type-ORM
-  await createConnection();
-
   //Start the express app and use json middleware
   const app = express();
   app.use(express.json());
@@ -77,10 +71,6 @@ const main = async () => {
 
   //Use this middleware to ensure that user logged into front end is a user under Action Coach
   app.use(verifyUser);
-
-  app.use("/api/token", tokenRoute);
-
-  app.use("/api/regions", regionsRoute);
 
   app.use("/api/users", usersRoute);
 

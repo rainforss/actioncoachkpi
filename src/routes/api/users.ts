@@ -1,8 +1,8 @@
 import express from "express";
 import { Session } from "express-session";
-import { User } from "../../entity/User";
-import { getRepository } from "typeorm";
-import { validateOrReject } from "class-validator";
+import { MASTER_LICENSEE_TYPE } from "../../utils/constants";
+import { recursivelyGetAllChildCompanies } from "../../utils/recursivelyGetAllChildCompaniesId";
+import { actionCoachUser } from "../../webApis/actionCoachUser";
 
 export type ExpressRequest = Request & {
   session: Session & { accessToken?: string };
@@ -13,27 +13,50 @@ export type ExpressRequest = Request & {
 const router = express.Router();
 
 router.get("/", async (req, res) => {
-  const userRepository = getRepository(User);
-  const user = await userRepository.find({
-    where: { firstName: { $eq: req.query.firstName } },
-  });
-  if (!user) {
-    return res
-      .status(400)
-      .json({
-        message: `User with first name ${req.query.firstName} does not exist.`,
+  try {
+    if (!req.query.email) {
+      return res
+        .status(400)
+        .json({ message: "Missing user email information." });
+    }
+    const user = await actionCoachUser(
+      req.app.locals.accessToken
+    ).getAcPartnerByEmail(req.query.email as string);
+    if (user.value.length === 0) {
+      return res.status(404).json({
+        message: `You are not an ActionCoach User.`,
       });
+    }
+    return res.status(200).json(user.value[0]);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json(error);
   }
-  return res.status(200).json(user);
 });
 
-router.post("/", async (req, res) => {
+router.get("/:acPartnerId/coaches", async (req, res) => {
   try {
-    const userRepository = getRepository(User);
-    const user = userRepository.create(req.body);
-    await validateOrReject(user);
-    const results = await userRepository.save(user);
-    return res.status(200).json(results);
+    const acPartnerId = req.params.acPartnerId;
+    const acPartner = await actionCoachUser(
+      req.app.locals.accessToken
+    ).getAcPartnerById(acPartnerId);
+    if (acPartner._ac_partnertype_value !== MASTER_LICENSEE_TYPE) {
+      res.status(400).json({
+        message:
+          "You need to be a Master Licensee to view Coaches information.",
+      });
+    }
+
+    const companies: string[] = [acPartner._ac_partnercompany_value];
+    const result = await recursivelyGetAllChildCompanies(
+      companies,
+      [acPartner._ac_partnercompany_value],
+      req.app.locals.accessToken
+    );
+    const coaches = await actionCoachUser(
+      req.app.locals.accessToken
+    ).getCoachesByPartnerCompanyIds(result);
+    return res.status(200).json(coaches.value);
   } catch (error) {
     return res.status(400).json(error);
   }
