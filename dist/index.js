@@ -61,13 +61,13 @@ exports.cca = new msal.ConfidentialClientApplication(msalConfig);
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const app = express_1.default();
     app.use(express_1.default.json());
-    app.use(cors_1.default({ origin: "http://localhost:3000", credentials: true }));
+    app.use(cors_1.default());
     tokenRequest_1.getToken(app);
     setInterval(() => tokenRequest_1.getToken(app), 1000 * 60 * 60);
     app.use(verifyUser_1.verifyUser);
     app.use("/api/users", users_1.default);
     app.use("/api/kpientries", kpiEntries_1.default);
-    app.listen(process.env.PORT || 5000, () => console.log("Server started at port 5000."));
+    app.listen(process.env.PORT || 5000, () => console.log(`Server started at port ${process.env.PORT || 5000}.`));
 });
 main().catch((error) => console.log(error));
 //# sourceMappingURL=index.js.map

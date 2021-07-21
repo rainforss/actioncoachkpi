@@ -34,36 +34,7 @@ const main = async () => {
   //Start the express app and use json middleware
   const app = express();
   app.use(express.json());
-  app.use(cors({ origin: "http://localhost:3000", credentials: true }));
-
-  //Graph access token configuration
-  // const clientCredentialGraphRequest: msal.ClientCredentialRequest = {
-  //   scopes: ["https://graph.microsoft.com/.default"],
-  //   azureRegion: "westus2",
-  //   skipCache: true,
-  // };
-
-  //Dynamics CRM access token configuration
-  // const clientCredentialCrmRequest: msal.ClientCredentialRequest = {
-  //   scopes: ["https://actioncoachsystems.crm.dynamics.com/.default"],
-  //   azureRegion: "westus2",
-  //   skipCache: true,
-  // };
-
-  //Function used to obtain both the CRM and Graph access token
-  // const getToken = async () => {
-  //   Promise.all([
-  //     cca.acquireTokenByClientCredential(clientCredentialGraphRequest),
-  //     cca.acquireTokenByClientCredential(clientCredentialCrmRequest),
-  //   ])
-  //     .then((responses) => {
-  //       console.log(responses);
-  //       const [graph, dynamics] = responses;
-  //       app.locals.graphAccessToken = graph?.accessToken;
-  //       app.locals.accessToken = dynamics?.accessToken;
-  //     })
-  //     .catch((err) => console.log(err));
-  // };
+  app.use(cors());
 
   //Get access tokens upon server start and periodically get tokens before previous ones expire.
   getToken(app);
@@ -77,7 +48,7 @@ const main = async () => {
   app.use("/api/kpientries", kpisRoute);
 
   app.listen(process.env.PORT || 5000, () =>
-    console.log("Server started at port 5000.")
+    console.log(`Server started at port ${process.env.PORT || 5000}.`)
   );
 };
 
