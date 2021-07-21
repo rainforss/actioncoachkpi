@@ -104,7 +104,7 @@ export const kpiEntry = (accessToken: string) => {
         });
         const filterString = filters.join(" or ");
         const result = await fetch(
-          `${process.env.DYNAMICS_CRM_ROOT_URL}/api/data/v9.0/ac_kpientries?$orderby=createdon desc&$filter=${filterString}&$select=ac_month,ac_year,ac_totalmarketinginvestment,ac_cashbank,ac_numberofleadtotal,ac_numberofondeckcalls,ac_numberofdiagnostics,ac_numberofnewclients&$expand=ac_Submitter($select=ac_name),transactioncurrencyid($select=isocurrencycode)`,
+          `${process.env.DYNAMICS_CRM_ROOT_URL}/api/data/v9.0/ac_kpientries?$orderby=_ac_submitter_value asc&$filter=${filterString}&$select=ac_month,ac_year,ac_totalmarketinginvestment,ac_cashbank,ac_numberofleadtotal,ac_numberofondeckcalls,ac_numberofdiagnostics,ac_numberofnewclients&$expand=ac_Submitter($select=ac_name),transactioncurrencyid($select=isocurrencycode)`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -134,7 +134,7 @@ export const kpiEntry = (accessToken: string) => {
         });
         const filterString = filters.join(" or ");
         const result = await fetch(
-          `${process.env.DYNAMICS_CRM_ROOT_URL}/api/data/v9.0/ac_kpientries?$orderby=createdon desc&$filter=(${filterString}) and ac_month ge ${beginMonth} and ac_month le ${endMonth} and ac_year ge ${beginYear} and ac_year le ${endYear}&$select=ac_month,ac_year,ac_totalmarketinginvestment,ac_cashbank,ac_numberofleadtotal,ac_numberofondeckcalls,ac_numberofdiagnostics,ac_numberofnewclients&$expand=ac_Submitter($select=ac_name),transactioncurrencyid($select=isocurrencycode)`,
+          `${process.env.DYNAMICS_CRM_ROOT_URL}/api/data/v9.0/ac_kpientries?$orderby=_ac_submitter_value asc&$filter=(${filterString}) and ac_month ge ${beginMonth} and ac_month le ${endMonth} and ac_year ge ${beginYear} and ac_year le ${endYear}&$select=ac_month,ac_year,ac_totalmarketinginvestment,ac_cashbank,ac_numberofleadtotal,ac_numberofondeckcalls,ac_numberofdiagnostics,ac_numberofnewclients&$expand=ac_Submitter($select=ac_name),transactioncurrencyid($select=isocurrencycode)`,
           {
             headers: {
               "Content-Type": "application/json",
