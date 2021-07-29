@@ -44,6 +44,7 @@ export class KpiEntry {
   ac_numberofmarketingstrategiesused: string = "0";
   ac_totalmarketinginvestment: number = 0;
   "ac_Submitter@odata.bind": string;
+  "transactioncurrencyid@odata.bind": string;
   "ownerid@odata.bind": string;
   ac_cashbank: number;
   ac_year: string;

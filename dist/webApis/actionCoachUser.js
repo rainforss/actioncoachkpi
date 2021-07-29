@@ -18,7 +18,7 @@ const actionCoachUser = (accessToken) => {
     return {
         getAcPartnerByEmail: (email) => __awaiter(void 0, void 0, void 0, function* () {
             try {
-                const result = yield nodeFetchJson_1.default(`${process.env.DYNAMICS_CRM_ROOT_URL}/api/data/v9.0/ac_actioncoachpartners?$filter=ac_email eq '${email}'&$select=ac_name,_ac_partnercompany_value,_ac_partnertype_value,_ownerid_value&$expand=ac_PartnerCompany($select=ac_name),ac_PartnerType($select=ac_name)`, {
+                const result = yield nodeFetchJson_1.default(`${process.env.DYNAMICS_CRM_ROOT_URL}/api/data/v9.0/ac_actioncoachpartners?$filter=ac_email eq '${email}'&$select=ac_name,_ac_partnercompany_value,_ac_partnertype_value,_ownerid_value&$expand=ac_PartnerCompany($select=ac_name;$expand=transactioncurrencyid($select=isocurrencycode)),ac_PartnerType($select=ac_name)`, {
                     headers: {
                         "Content-Type": "application/json",
                         "OData-Version": "4.0",
@@ -35,7 +35,7 @@ const actionCoachUser = (accessToken) => {
         }),
         getAcPartnerById: (acPartnerId) => __awaiter(void 0, void 0, void 0, function* () {
             try {
-                const result = yield nodeFetchJson_1.default(`${process.env.DYNAMICS_CRM_ROOT_URL}/api/data/v9.0/ac_actioncoachpartners(${acPartnerId})?$select=ac_name,_ac_partnercompany_value,_ac_partnertype_value,_ownerid_value&$expand=ac_PartnerCompany($select=ac_name),ac_PartnerType($select=ac_name)`, {
+                const result = yield nodeFetchJson_1.default(`${process.env.DYNAMICS_CRM_ROOT_URL}/api/data/v9.0/ac_actioncoachpartners(${acPartnerId})?$select=ac_name,_ac_partnercompany_value,_ac_partnertype_value,_ownerid_value&$expand=ac_PartnerCompany($select=ac_name;$expand=transactioncurrencyid($select=isocurrencycode)),ac_PartnerType($select=ac_name)`, {
                     headers: {
                         "Content-Type": "application/json",
                         "OData-Version": "4.0",

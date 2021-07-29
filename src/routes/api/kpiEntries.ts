@@ -228,6 +228,9 @@ router.post("/", async (req, res) => {
     kpiEntryData[
       "ac_Submitter@odata.bind"
     ] = `/ac_actioncoachpartners(${ac_submitter})`;
+    kpiEntryData[
+      "transactioncurrencyid@odata.bind"
+    ] = `/transactioncurrencies(${user.ac_PartnerCompany.transactioncurrencyid.transactioncurrencyid})`;
 
     //Set the owner of the record to be the owner of AC Partner record
     kpiEntryData["ownerid@odata.bind"] = `/systemusers(${user._ownerid_value})`;
@@ -237,6 +240,9 @@ router.post("/", async (req, res) => {
       const kpi = new KpiEntry();
       kpi["ac_Submitter@odata.bind"] = `/ac_actioncoachpartners(${c.coach})`;
       kpi["ownerid@odata.bind"] = `/systemusers(${user._ownerid_value})`;
+      kpi[
+        "transactioncurrencyid@odata.bind"
+      ] = `/transactioncurrencies(${user.ac_PartnerCompany.transactioncurrencyid.transactioncurrencyid})`;
       kpi.ac_year = nonBindingData.ac_year;
       kpi.ac_month = nonBindingData.ac_month;
       kpi.ac_cashbank = c.value;
