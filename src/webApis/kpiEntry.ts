@@ -33,6 +33,28 @@ export const kpiEntry = (accessToken: string) => {
   return {
     createKpiEntry: async (kpiEntry: KpiEntry) => {
       try {
+        const ac_submitter_id = kpiEntry["ac_Submitter@odata.bind"]
+          .split("(")[1]
+          .slice(0, -1);
+        const existingEntries = await fetch(
+          `${process.env.DYNAMICS_CRM_ROOT_URL}/api/data/v9.0/ac_kpientries?$filter=_ac_submitter_value eq ${ac_submitter_id} and ac_month eq ${kpiEntry.ac_month} and ac_year eq ${kpiEntry.ac_year}&$select=ac_month,ac_year&$expand=ac_Submitter($select=ac_name)`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "OData-Version": "4.0",
+              Accept: "application/json",
+              Prefer: "return=representation",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            method: "GET",
+          }
+        );
+        if (existingEntries.value.length > 0) {
+          return {
+            warning: `KPI for ${existingEntries.value[0].ac_Submitter.ac_name} of ${kpiEntry.ac_month} ${kpiEntry.ac_year} already exists.`,
+          };
+        }
+
         const result = await fetch(
           `${process.env.DYNAMICS_CRM_ROOT_URL}/api/data/v9.0/ac_kpientries?$select=ac_month,ac_year`,
           {

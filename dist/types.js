@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.KpiEntry = void 0;
+exports.CashbankEntry = exports.KpiEntry = void 0;
 class KpiEntry {
     constructor() {
         this.ac_actionclubquantity = "0";
@@ -50,4 +50,10 @@ class KpiEntry {
     }
 }
 exports.KpiEntry = KpiEntry;
+class CashbankEntry {
+    constructor() {
+        this.ac_amount = 0;
+    }
+}
+exports.CashbankEntry = CashbankEntry;
 //# sourceMappingURL=types.js.map

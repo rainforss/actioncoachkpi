@@ -28,6 +28,7 @@ const recursivelyGetAllChildCompaniesId_1 = require("../../utils/recursivelyGetA
 const actionCoachUser_1 = require("../../webApis/actionCoachUser");
 const kpiEntry_1 = require("../../webApis/kpiEntry");
 const types_1 = require("../../types");
+const cashbankEntry_1 = require("../../webApis/cashbankEntry");
 const router = express_1.default.Router();
 router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -130,34 +131,34 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 message: `ID ${ac_submitter} does not correspond to an existing ActionCoach User.`,
             });
         }
-        const kpiEntryData = Object.assign({}, nonBindingData);
-        const index = cashBank.findIndex((c) => c.coach === ac_submitter);
-        if (index === -1) {
+        let seen = new Set();
+        const hasDuplicates = cashBank.some((c) => seen.size === seen.add(c.coach).size);
+        if (hasDuplicates) {
             return res.status(400).json({
-                message: `Submitter ${user.ac_name} is missing Cash Bank information.`,
+                message: "Cash bank entries with duplicate ActionCOACH Partners are not allowed.",
             });
         }
-        const userOwnCashBank = cashBank.splice(index, 1);
-        kpiEntryData.ac_cashbank = userOwnCashBank[0].value;
+        const kpiEntryData = Object.assign({}, nonBindingData);
         kpiEntryData["ac_Submitter@odata.bind"] = `/ac_actioncoachpartners(${ac_submitter})`;
         kpiEntryData["transactioncurrencyid@odata.bind"] = `/transactioncurrencies(${user.ac_PartnerCompany.transactioncurrencyid.transactioncurrencyid})`;
         kpiEntryData["ownerid@odata.bind"] = `/systemusers(${user._ownerid_value})`;
         const promises = [];
         cashBank.forEach((c) => {
-            const kpi = new types_1.KpiEntry();
-            kpi["ac_Submitter@odata.bind"] = `/ac_actioncoachpartners(${c.coach})`;
-            kpi["ownerid@odata.bind"] = `/systemusers(${user._ownerid_value})`;
-            kpi["transactioncurrencyid@odata.bind"] = `/transactioncurrencies(${user.ac_PartnerCompany.transactioncurrencyid.transactioncurrencyid})`;
-            kpi.ac_year = nonBindingData.ac_year;
-            kpi.ac_month = nonBindingData.ac_month;
-            kpi.ac_cashbank = c.value;
-            promises.push(kpiEntry_1.kpiEntry(req.app.locals.accessToken).createKpiEntry(kpi));
+            const newCashbank = new types_1.CashbankEntry();
+            newCashbank["ac_Submitter@odata.bind"] = `/ac_actioncoachpartners(${c.coach})`;
+            newCashbank["ownerid@odata.bind"] = `/systemusers(${user._ownerid_value})`;
+            newCashbank["transactioncurrencyid@odata.bind"] = `/transactioncurrencies(${user.ac_PartnerCompany.transactioncurrencyid.transactioncurrencyid})`;
+            newCashbank.ac_year = nonBindingData.ac_year;
+            newCashbank.ac_month = nonBindingData.ac_month;
+            newCashbank.ac_amount = c.value;
+            promises.push(cashbankEntry_1.cashbankEntry(req.app.locals.accessToken).createCashbankEntry(newCashbank));
         });
         promises.push(kpiEntry_1.kpiEntry(req.app.locals.accessToken).createKpiEntry(kpiEntryData));
         const result = yield Promise.all(promises);
         return res.status(200).json(result);
     }
     catch (error) {
+        console.log(error);
         return res.status(400).json(error);
     }
 }));

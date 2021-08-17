@@ -46,7 +46,15 @@ export class KpiEntry {
   "ac_Submitter@odata.bind": string;
   "transactioncurrencyid@odata.bind": string;
   "ownerid@odata.bind": string;
-  ac_cashbank: number;
   ac_year: string;
   ac_month: string;
+}
+
+export class CashbankEntry {
+  "ac_Submitter@odata.bind": string;
+  "transactioncurrencyid@odata.bind": string;
+  "ownerid@odata.bind": string;
+  ac_amount: number = 0;
+  ac_month: string;
+  ac_year: string;
 }

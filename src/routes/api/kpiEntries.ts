@@ -3,7 +3,8 @@ import { Session } from "express-session";
 import { recursivelyGetAllChildCompanies } from "../../utils/recursivelyGetAllChildCompaniesId";
 import { actionCoachUser } from "../../webApis/actionCoachUser";
 import { kpiEntry } from "../../webApis/kpiEntry";
-import { KpiEntry } from "../../types";
+import { CashbankEntry } from "../../types";
+import { cashbankEntry } from "../../webApis/cashbankEntry";
 
 export type ExpressRequest = Request & {
   session: Session & { accessToken?: string };
@@ -214,17 +215,21 @@ router.post("/", async (req, res) => {
       });
     }
 
+    let seen = new Set();
+    const hasDuplicates = cashBank.some(
+      (c: any) => seen.size === seen.add(c.coach).size
+    );
+    if (hasDuplicates) {
+      return res.status(400).json({
+        message:
+          "Cash bank entries with duplicate ActionCOACH Partners are not allowed.",
+      });
+    }
+
     const kpiEntryData = {
       ...nonBindingData,
     };
-    const index = cashBank.findIndex((c: any) => c.coach === ac_submitter);
-    if (index === -1) {
-      return res.status(400).json({
-        message: `Submitter ${user.ac_name} is missing Cash Bank information.`,
-      });
-    }
-    const userOwnCashBank = cashBank.splice(index, 1);
-    kpiEntryData.ac_cashbank = userOwnCashBank[0].value;
+
     kpiEntryData[
       "ac_Submitter@odata.bind"
     ] = `/ac_actioncoachpartners(${ac_submitter})`;
@@ -237,16 +242,24 @@ router.post("/", async (req, res) => {
 
     const promises: any[] = [];
     cashBank.forEach((c: any) => {
-      const kpi = new KpiEntry();
-      kpi["ac_Submitter@odata.bind"] = `/ac_actioncoachpartners(${c.coach})`;
-      kpi["ownerid@odata.bind"] = `/systemusers(${user._ownerid_value})`;
-      kpi[
+      const newCashbank = new CashbankEntry();
+      newCashbank[
+        "ac_Submitter@odata.bind"
+      ] = `/ac_actioncoachpartners(${c.coach})`;
+      newCashbank[
+        "ownerid@odata.bind"
+      ] = `/systemusers(${user._ownerid_value})`;
+      newCashbank[
         "transactioncurrencyid@odata.bind"
       ] = `/transactioncurrencies(${user.ac_PartnerCompany.transactioncurrencyid.transactioncurrencyid})`;
-      kpi.ac_year = nonBindingData.ac_year;
-      kpi.ac_month = nonBindingData.ac_month;
-      kpi.ac_cashbank = c.value;
-      promises.push(kpiEntry(req.app.locals.accessToken).createKpiEntry(kpi));
+      newCashbank.ac_year = nonBindingData.ac_year;
+      newCashbank.ac_month = nonBindingData.ac_month;
+      newCashbank.ac_amount = c.value;
+      promises.push(
+        cashbankEntry(req.app.locals.accessToken).createCashbankEntry(
+          newCashbank
+        )
+      );
     });
     promises.push(
       kpiEntry(req.app.locals.accessToken).createKpiEntry(kpiEntryData)
@@ -254,6 +267,7 @@ router.post("/", async (req, res) => {
     const result = await Promise.all(promises);
     return res.status(200).json(result);
   } catch (error) {
+    console.log(error);
     return res.status(400).json(error);
   }
 });
