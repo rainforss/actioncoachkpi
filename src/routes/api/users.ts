@@ -41,10 +41,7 @@ router.get("/:acPartnerId/coaches", async (req, res) => {
       req.app.locals.accessToken
     ).getAcPartnerById(acPartnerId);
     if (acPartner._ac_partnertype_value !== MASTER_LICENSEE_TYPE) {
-      res.status(400).json({
-        message:
-          "You need to be a Master Licensee to view Coaches information.",
-      });
+      return res.status(200).json([]);
     }
 
     const companies: string[] = [acPartner._ac_partnercompany_value];

@@ -42,9 +42,7 @@ router.get("/:acPartnerId/coaches", (req, res) => __awaiter(void 0, void 0, void
         const acPartnerId = req.params.acPartnerId;
         const acPartner = yield actionCoachUser_1.actionCoachUser(req.app.locals.accessToken).getAcPartnerById(acPartnerId);
         if (acPartner._ac_partnertype_value !== constants_1.MASTER_LICENSEE_TYPE) {
-            res.status(400).json({
-                message: "You need to be a Master Licensee to view Coaches information.",
-            });
+            return res.status(200).json([]);
         }
         const companies = [acPartner._ac_partnercompany_value];
         const result = yield recursivelyGetAllChildCompaniesId_1.recursivelyGetAllChildCompanies(companies, [acPartner._ac_partnercompany_value], req.app.locals.accessToken);
