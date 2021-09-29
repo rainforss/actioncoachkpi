@@ -27,7 +27,7 @@ router.get("/", async (req, res) => {
         message: `You are not an ActionCoach User.`,
       });
     }
-    return res.status(200).json(user.value[0]);
+    return res.status(200).json(user.value);
   } catch (error) {
     console.log(error);
     return res.status(400).json(error);
