@@ -138,7 +138,9 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 message: "Cash bank entries with duplicate ActionCOACH Partners are not allowed.",
             });
         }
-        const lastDayOfMonth = new Date(nonBindingData.ac_year, nonBindingData.ac_month, 0).toISOString();
+        const lastDayOfMonth = new Date(nonBindingData.ac_year, nonBindingData.ac_month, 0)
+            .toISOString()
+            .split("T")[0];
         const kpiEntryData = Object.assign({}, nonBindingData);
         kpiEntryData["ac_submissiondate"] = lastDayOfMonth;
         kpiEntryData["ac_Submitter@odata.bind"] = `/ac_actioncoachpartners(${ac_submitter})`;

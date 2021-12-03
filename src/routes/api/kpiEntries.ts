@@ -230,7 +230,9 @@ router.post("/", async (req, res) => {
       nonBindingData.ac_year,
       nonBindingData.ac_month,
       0
-    ).toISOString();
+    )
+      .toISOString()
+      .split("T")[0];
     const kpiEntryData = {
       ...nonBindingData,
     };
