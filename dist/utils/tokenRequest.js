@@ -28,7 +28,6 @@ const getToken = (app) => __awaiter(void 0, void 0, void 0, function* () {
     ])
         .then((responses) => {
         const [graph, dynamics] = responses;
-        console.log(dynamics === null || dynamics === void 0 ? void 0 : dynamics.accessToken);
         app.locals.graphAccessToken = graph === null || graph === void 0 ? void 0 : graph.accessToken;
         app.locals.accessToken = dynamics === null || dynamics === void 0 ? void 0 : dynamics.accessToken;
     })

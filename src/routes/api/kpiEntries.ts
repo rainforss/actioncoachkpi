@@ -226,10 +226,16 @@ router.post("/", async (req, res) => {
       });
     }
 
+    const lastDayOfMonth = new Date(
+      nonBindingData.ac_year,
+      nonBindingData.ac_month,
+      0
+    ).toISOString();
     const kpiEntryData = {
       ...nonBindingData,
     };
 
+    kpiEntryData["ac_submissiondate"] = lastDayOfMonth;
     kpiEntryData[
       "ac_Submitter@odata.bind"
     ] = `/ac_actioncoachpartners(${ac_submitter})`;
@@ -241,6 +247,7 @@ router.post("/", async (req, res) => {
     kpiEntryData["ownerid@odata.bind"] = `/systemusers(${user._ownerid_value})`;
 
     const promises: any[] = [];
+
     cashBank.forEach((c: any) => {
       const newCashbank = new CashbankEntry();
       newCashbank[
@@ -255,6 +262,7 @@ router.post("/", async (req, res) => {
       newCashbank.ac_year = nonBindingData.ac_year;
       newCashbank.ac_month = nonBindingData.ac_month;
       newCashbank.ac_amount = c.value;
+      newCashbank.ac_submissiondate = lastDayOfMonth;
       promises.push(
         cashbankEntry(req.app.locals.accessToken).createCashbankEntry(
           newCashbank

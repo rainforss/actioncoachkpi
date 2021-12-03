@@ -138,7 +138,9 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 message: "Cash bank entries with duplicate ActionCOACH Partners are not allowed.",
             });
         }
+        const lastDayOfMonth = new Date(nonBindingData.ac_year, nonBindingData.ac_month, 0).toISOString();
         const kpiEntryData = Object.assign({}, nonBindingData);
+        kpiEntryData["ac_submissiondate"] = lastDayOfMonth;
         kpiEntryData["ac_Submitter@odata.bind"] = `/ac_actioncoachpartners(${ac_submitter})`;
         kpiEntryData["transactioncurrencyid@odata.bind"] = `/transactioncurrencies(${user.ac_PartnerCompany.transactioncurrencyid.transactioncurrencyid})`;
         kpiEntryData["ownerid@odata.bind"] = `/systemusers(${user._ownerid_value})`;
@@ -151,6 +153,7 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             newCashbank.ac_year = nonBindingData.ac_year;
             newCashbank.ac_month = nonBindingData.ac_month;
             newCashbank.ac_amount = c.value;
+            newCashbank.ac_submissiondate = lastDayOfMonth;
             promises.push(cashbankEntry_1.cashbankEntry(req.app.locals.accessToken).createCashbankEntry(newCashbank));
         });
         promises.push(kpiEntry_1.kpiEntry(req.app.locals.accessToken).createKpiEntry(kpiEntryData));

@@ -48,6 +48,7 @@ export class KpiEntry {
   "ownerid@odata.bind": string;
   ac_year: string;
   ac_month: string;
+  ac_submissiondate: string;
 }
 
 export class CashbankEntry {
@@ -57,4 +58,5 @@ export class CashbankEntry {
   ac_amount: number = 0;
   ac_month: string;
   ac_year: string;
+  ac_submissiondate: string;
 }
